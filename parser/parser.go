@@ -32,6 +32,14 @@ func parseLine(line string) (command Cmd, err error) {
 				err = errors.New("Parser: expected two arguments (username, password) for LOGIN command")
 				return
 			}
+			if !isAString(lexCommand.Arguments[0]) {
+				err = errors.New("Parser: expected first argument (userid) to be astring")
+				return
+			}
+			if !isAString(lexCommand.Arguments[1]) {
+				err = errors.New("Parser: expected second argument (password) to be astring")
+				return
+			}
 			command = LoginCmd{
 				Username: lexCommand.Arguments[0],
 				Password: lexCommand.Arguments[1],

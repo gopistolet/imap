@@ -69,6 +69,7 @@ func TestLexer(t *testing.T) {
 			"(test)",
 			" ",
 			"\\test",
+			"test+test",
 			string([]byte{0x0, 0x1, 0x2, 0x3, 0x4}),
 			string([]byte{0x7f}),
 		} {
@@ -102,6 +103,82 @@ func TestLexer(t *testing.T) {
 		} {
 			So(isAtom(command), ShouldEqual, false)
 		}
+	})
+
+	Convey("Testing isDigit", t, func() {
+		for _, d := range []rune{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'} {
+			So(isDigit(d), ShouldEqual, true)
+		}
+
+		for _, d := range []rune{'a', 'π', '-', ')'} {
+			So(isDigit(d), ShouldEqual, false)
+		}
+	})
+
+	Convey("Testing isQuoted", t, func() {
+		for _, s := range []string{
+			"a002",
+			"test",
+			"1",
+			"test",
+			`\\`,
+			`\"`,
+		} {
+			So(isQuoted(s), ShouldEqual, true)
+		}
+
+		for _, s := range []string{
+			`a0\02`,
+			`te"st`,
+			`"`,
+			`\`,
+		} {
+			So(isQuoted(s), ShouldNotEqual, true)
+		}
+	})
+
+	Convey("Testing isAString", t, func() {
+		for _, s := range []string{
+			"a002",
+			"test",
+			"1",
+			"test",
+			`"hello world"`,
+			`"\\"`,
+			`"\""`,
+			`"hello\"world"`,
+			`"hello'world"`,
+			"{10}",
+			"{1}",
+		} {
+			So(isAString(s), ShouldEqual, true)
+		}
+
+		for _, s := range []string{
+			"test*test",
+			"test%test",
+			"{test}",
+			"{10",
+			"{",
+			"(",
+			")",
+			"(test",
+			"test)",
+			"(test)",
+			" ",
+			"",
+			`"`,
+			`"test`,
+			`test"`,
+			"\\test",
+			"👎",
+			"π",
+			string([]byte{0x0, 0x1, 0x2, 0x3, 0x4}),
+			string([]byte{0x7f}),
+		} {
+			So(isAString(s), ShouldEqual, false)
+		}
+
 	})
 
 }

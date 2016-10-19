@@ -47,6 +47,13 @@ func TestParser(t *testing.T) {
 			cmd, err = parseLine("a001 login test")
 			So(err, ShouldNotEqual, nil)
 
+			// Wrong type of arguments
+			cmd, err = parseLine("a001 login {test test")
+			So(err, ShouldNotEqual, nil)
+
+			cmd, err = parseLine("a001 login test \"test")
+			So(err, ShouldNotEqual, nil)
+
 		})
 
 		Convey("LOGOUT", func() {
