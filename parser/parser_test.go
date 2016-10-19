@@ -19,6 +19,17 @@ func TestParser(t *testing.T) {
 
 		})
 
+		Convey("STARTTLS", func() {
+
+			cmd, err := parseLine("a001 STARTTLS")
+			So(err, ShouldEqual, nil)
+			So(cmd, ShouldHaveSameTypeAs, StarttlsCmd{})
+
+			cmd, err = parseLine("a001 STARTTLS no arguments expected")
+			So(err, ShouldNotEqual, nil)
+
+		})
+
 		Convey("LOGIN", func() {
 
 			cmd, err := parseLine("a001 login mrc secret")
@@ -66,6 +77,28 @@ func TestParser(t *testing.T) {
 			So(cmd, ShouldHaveSameTypeAs, NoopCmd{})
 
 			cmd, err = parseLine("a001 NOOP no arguments expected")
+			So(err, ShouldNotEqual, nil)
+
+		})
+
+		Convey("AUTHENTICATE", func() {
+
+			cmd, err := parseLine("a001 AUTHENTICATE GSSAPI")
+			So(err, ShouldEqual, nil)
+			So(cmd, ShouldHaveSameTypeAs, AuthenticateCmd{})
+			authCmd := cmd.(AuthenticateCmd)
+			So(authCmd.Mechanism, ShouldEqual, "GSSAPI")
+
+			// Not enough arguments
+			cmd, err = parseLine("a001 AUTHENTICATE")
+			So(err, ShouldNotEqual, nil)
+
+			// Too many arguments
+			cmd, err = parseLine("a001 AUTHENTICATE to many args")
+			So(err, ShouldNotEqual, nil)
+
+			// Non atom argument
+			cmd, err = parseLine("a001 AUTHENTICATE ßlaßlaßla")
 			So(err, ShouldNotEqual, nil)
 
 		})

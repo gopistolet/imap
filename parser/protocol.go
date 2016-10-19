@@ -16,3 +16,10 @@ type CapabilityCmd struct {
 
 type NoopCmd struct {
 }
+
+type StarttlsCmd struct {
+}
+
+type AuthenticateCmd struct {
+	Mechanism string
+}

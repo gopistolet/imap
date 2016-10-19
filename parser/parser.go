@@ -13,6 +13,14 @@ func parseLine(line string) (command Cmd, err error) {
 	}
 
 	switch lexCommand.Name {
+	case "STARTTLS":
+		{
+			if len(lexCommand.Arguments) != 0 {
+				err = errors.New("Parser: expected no arguments for STARTTLS command")
+				return
+			}
+			command = StarttlsCmd{}
+		}
 	case "LOGIN":
 		{
 			/*
@@ -25,8 +33,8 @@ func parseLine(line string) (command Cmd, err error) {
 				return
 			}
 			command = LoginCmd{
-				Username: string(lexCommand.Arguments[0]),
-				Password: string(lexCommand.Arguments[1]),
+				Username: lexCommand.Arguments[0],
+				Password: lexCommand.Arguments[1],
 			}
 		}
 	case "LOGOUT":
@@ -52,6 +60,26 @@ func parseLine(line string) (command Cmd, err error) {
 				return
 			}
 			command = NoopCmd{}
+		}
+	case "AUTHENTICATE":
+		{
+			/*
+				authenticate    = "AUTHENTICATE" SP auth-type *(CRLF base64)
+				auth-type       = atom
+									; Defined by [SASL]
+			*/
+			if len(lexCommand.Arguments) != 1 {
+				err = errors.New("Parser: expected 1 argument (authentication mechanism name) for AUTHENTICATE command")
+				return
+			}
+			if !isAtom(lexCommand.Arguments[0]) {
+				err = errors.New("Parser: expected first argument (authentication mechanism name) to be atom")
+				return
+			}
+
+			command = AuthenticateCmd{
+				Mechanism: lexCommand.Arguments[0],
+			}
 		}
 	default:
 		{

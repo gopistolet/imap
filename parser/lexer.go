@@ -10,7 +10,7 @@ type Argument string
 type lexCommand struct {
 	Tag       string
 	Name      string
-	Arguments []Argument
+	Arguments []string
 }
 
 // lexLine creates a command struct for an IMAP line
@@ -30,10 +30,7 @@ func lexLine(line string) (c lexCommand, err error) {
 		c.Name = strings.ToUpper(parts[1])
 	}
 	if len(parts) > 2 {
-		c.Arguments = make([]Argument, len(parts)-2)
-		for i, a := range parts[2:] {
-			c.Arguments[i] = Argument(a)
-		}
+		c.Arguments = parts[2:]
 	}
 	return
 }
@@ -62,17 +59,49 @@ func isTag(s string) bool {
 }
 
 func isAlpha(c rune) bool {
-	switch c {
-	case 'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-		'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z':
+	if c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' {
 		return true
+	} else {
+		return false
 	}
-	return false
 }
 
 func isCommand(s string) bool {
 	for _, c := range s {
 		if !isAlpha(c) {
+			return false
+		}
+	}
+	return true
+}
+
+/*
+atom            = 1*ATOM-CHAR
+ATOM-CHAR       = <any CHAR except atom-specials>
+atom-specials   = "(" / ")" / "{" / SP / CTL / list-wildcards /
+				  quoted-specials / resp-specials
+CHAR            =  %x01-7F
+                     ; any 7-bit US-ASCII character,
+                     ;  excluding NUL
+*/
+func isAtomChar(c rune) bool {
+	switch c {
+	case '(', ')', '{', ' ', '%', '*', '"', '\\', ']':
+		return false
+	case 0x0, 0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9, 0xa, 0xb, 0xc, 0xd, 0xe, 0xf, 0x10, 0x11, 0x12,
+		0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f, 0x7f: // CTL chars
+		return false
+	}
+	if c >= 0x01 && c <= 0x7f {
+		return true
+	} else {
+		return false
+	}
+}
+
+func isAtom(s string) bool {
+	for _, c := range s {
+		if !isAtomChar(c) {
 			return false
 		}
 	}

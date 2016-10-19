@@ -56,6 +56,7 @@ func TestLexer(t *testing.T) {
 			"a002",
 			"test",
 			"1",
+			"test]",
 		} {
 			So(isTag(command), ShouldEqual, true)
 		}
@@ -69,8 +70,37 @@ func TestLexer(t *testing.T) {
 			" ",
 			"\\test",
 			string([]byte{0x0, 0x1, 0x2, 0x3, 0x4}),
+			string([]byte{0x7f}),
 		} {
 			So(isTag(command), ShouldEqual, false)
+		}
+	})
+
+	Convey("Testing isAtom", t, func() {
+		for _, command := range []string{
+			"a002",
+			"test",
+			"1",
+			"test",
+		} {
+			So(isAtom(command), ShouldEqual, true)
+		}
+
+		for _, command := range []string{
+			`"invalid"`,
+			"test*test",
+			"test%test",
+			"{test}",
+			"(test)",
+			" ",
+			"\\test",
+			"]",
+			"👎",
+			"π",
+			string([]byte{0x0, 0x1, 0x2, 0x3, 0x4}),
+			string([]byte{0x7f}),
+		} {
+			So(isAtom(command), ShouldEqual, false)
 		}
 	})
 
