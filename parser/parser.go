@@ -2,6 +2,7 @@ package parser
 
 import (
 	"errors"
+	"strings"
 )
 
 // parseLine parses a single line and returns the matching IMAP command
@@ -13,6 +14,34 @@ func parseLine(line string) (command Cmd, err error) {
 	}
 
 	switch lexCommand.Name {
+
+	// Client Commands - Any State
+	case "LOGOUT":
+		{
+			if len(lexCommand.Arguments) != 0 {
+				err = errors.New("Parser: expected no arguments for LOGOUT command")
+				return
+			}
+			command = LogoutCmd{}
+		}
+	case "CAPABILITY":
+		{
+			if len(lexCommand.Arguments) != 0 {
+				err = errors.New("Parser: expected no arguments for CAPABILITY command")
+				return
+			}
+			command = CapabilityCmd{}
+		}
+	case "NOOP":
+		{
+			if len(lexCommand.Arguments) != 0 {
+				err = errors.New("Parser: expected no arguments for NOOP command")
+				return
+			}
+			command = NoopCmd{}
+		}
+
+	// Client Commands - Not Authenticated State
 	case "STARTTLS":
 		{
 			if len(lexCommand.Arguments) != 0 {
@@ -45,30 +74,6 @@ func parseLine(line string) (command Cmd, err error) {
 				Password: lexCommand.Arguments[1],
 			}
 		}
-	case "LOGOUT":
-		{
-			if len(lexCommand.Arguments) != 0 {
-				err = errors.New("Parser: expected no arguments for LOGOUT command")
-				return
-			}
-			command = LogoutCmd{}
-		}
-	case "CAPABILITY":
-		{
-			if len(lexCommand.Arguments) != 0 {
-				err = errors.New("Parser: expected no arguments for CAPABILITY command")
-				return
-			}
-			command = CapabilityCmd{}
-		}
-	case "NOOP":
-		{
-			if len(lexCommand.Arguments) != 0 {
-				err = errors.New("Parser: expected no arguments for NOOP command")
-				return
-			}
-			command = NoopCmd{}
-		}
 	case "AUTHENTICATE":
 		{
 			/*
@@ -89,6 +94,78 @@ func parseLine(line string) (command Cmd, err error) {
 				Mechanism: lexCommand.Arguments[0],
 			}
 		}
+
+	// Client Commands - Authenticated State
+	case "SELECT":
+		{
+			/*
+				select  = "SELECT" SP mailbox
+			*/
+			if len(lexCommand.Arguments) != 1 {
+				err = errors.New("Parser: expected 1 argument for SELECT command")
+				return
+			}
+			if !isMailbox(lexCommand.Arguments[0]) {
+				err = errors.New("Parser: expected first argument (mailbox) for SELECT to be 'INBOX' or astring")
+			}
+
+			command = SelectCmd{
+				Mailbox: parseMailbox(lexCommand.Arguments[0]),
+			}
+		}
+	case "EXAMINE":
+		{
+			/*
+				examine = "EXAMINE" SP mailbox
+			*/
+			if len(lexCommand.Arguments) != 1 {
+				err = errors.New("Parser: expected 1 argument for EXAMINE command")
+				return
+			}
+			if !isMailbox(lexCommand.Arguments[0]) {
+				err = errors.New("Parser: expected first argument (mailbox) for EXAMINE to be 'INBOX' or astring")
+			}
+
+			command = ExamineCmd{
+				Mailbox: parseMailbox(lexCommand.Arguments[0]),
+			}
+		}
+	case "CREATE":
+		{
+			/*
+				create = "CREATE" SP mailbox
+				          ; Use of INBOX gives a NO error
+			*/
+			if len(lexCommand.Arguments) != 1 {
+				err = errors.New("Parser: expected 1 argument for CREATE command")
+				return
+			}
+			if !isMailbox(lexCommand.Arguments[0]) {
+				err = errors.New("Parser: expected first argument (mailbox) for CREATE to be 'INBOX' or astring")
+			}
+
+			command = CreateCmd{
+				Mailbox: parseMailbox(lexCommand.Arguments[0]),
+			}
+		}
+	case "DELETE":
+		{
+			/*
+				delete = "DELETE" SP mailbox
+				          ; Use of INBOX gives a NO error
+			*/
+			if len(lexCommand.Arguments) != 1 {
+				err = errors.New("Parser: expected 1 argument for DELETE command")
+				return
+			}
+			if !isMailbox(lexCommand.Arguments[0]) {
+				err = errors.New("Parser: expected first argument (mailbox) for DELETE to be 'INBOX' or astring")
+			}
+
+			command = DeleteCmd{
+				Mailbox: parseMailbox(lexCommand.Arguments[0]),
+			}
+		}
 	default:
 		{
 			err = errors.New("Unknown command")
@@ -97,4 +174,12 @@ func parseLine(line string) (command Cmd, err error) {
 
 	return
 
+}
+
+func parseMailbox(s string) string {
+	if strings.ToUpper(s) == "INBOX" {
+		return "INBOX"
+	} else {
+		return s
+	}
 }

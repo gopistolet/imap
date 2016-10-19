@@ -110,6 +110,118 @@ func TestParser(t *testing.T) {
 
 		})
 
+		Convey("SELECT", func() {
+
+			cmd, err := parseLine("a001 SELECT inbox")
+			So(err, ShouldEqual, nil)
+			So(cmd, ShouldHaveSameTypeAs, SelectCmd{})
+			cmd1 := cmd.(SelectCmd)
+			So(cmd1.Mailbox, ShouldEqual, "INBOX")
+
+			cmd, err = parseLine("a001 SELECT some_inbox")
+			So(err, ShouldEqual, nil)
+			So(cmd, ShouldHaveSameTypeAs, SelectCmd{})
+			cmd1 = cmd.(SelectCmd)
+			So(cmd1.Mailbox, ShouldEqual, "some_inbox")
+
+			// Not enough arguments
+			cmd, err = parseLine("a001 SELECT")
+			So(err, ShouldNotEqual, nil)
+
+			// Too many arguments
+			cmd, err = parseLine("a001 SELECT to many args")
+			So(err, ShouldNotEqual, nil)
+
+			// Non astring argument
+			cmd, err = parseLine("a001 SELECT test\"test")
+			So(err, ShouldNotEqual, nil)
+
+		})
+
+		Convey("EXAMINE", func() {
+
+			cmd, err := parseLine("a001 EXAMINE inbox")
+			So(err, ShouldEqual, nil)
+			So(cmd, ShouldHaveSameTypeAs, ExamineCmd{})
+			cmd1 := cmd.(ExamineCmd)
+			So(cmd1.Mailbox, ShouldEqual, "INBOX")
+
+			cmd, err = parseLine("a001 EXAMINE some_inbox")
+			So(err, ShouldEqual, nil)
+			So(cmd, ShouldHaveSameTypeAs, ExamineCmd{})
+			cmd1 = cmd.(ExamineCmd)
+			So(cmd1.Mailbox, ShouldEqual, "some_inbox")
+
+			// Not enough arguments
+			cmd, err = parseLine("a001 EXAMINE")
+			So(err, ShouldNotEqual, nil)
+
+			// Too many arguments
+			cmd, err = parseLine("a001 EXAMINE to many args")
+			So(err, ShouldNotEqual, nil)
+
+			// Non astring argument
+			cmd, err = parseLine("a001 EXAMINE test\"test")
+			So(err, ShouldNotEqual, nil)
+
+		})
+
+		Convey("CREATE", func() {
+
+			cmd, err := parseLine("a001 CREATE inbox")
+			So(err, ShouldEqual, nil)
+			So(cmd, ShouldHaveSameTypeAs, CreateCmd{})
+			cmd1 := cmd.(CreateCmd)
+			So(cmd1.Mailbox, ShouldEqual, "INBOX")
+
+			cmd, err = parseLine("a001 CREATE some_inbox")
+			So(err, ShouldEqual, nil)
+			So(cmd, ShouldHaveSameTypeAs, CreateCmd{})
+			cmd1 = cmd.(CreateCmd)
+			So(cmd1.Mailbox, ShouldEqual, "some_inbox")
+
+			// Not enough arguments
+			cmd, err = parseLine("a001 CREATE")
+			So(err, ShouldNotEqual, nil)
+
+			// Too many arguments
+			cmd, err = parseLine("a001 CREATE to many args")
+			So(err, ShouldNotEqual, nil)
+
+			// Non astring argument
+			cmd, err = parseLine("a001 EXAMINE test\"test")
+			So(err, ShouldNotEqual, nil)
+
+		})
+
+		Convey("DELETE", func() {
+
+			cmd, err := parseLine("a001 DELETE inbox")
+			So(err, ShouldEqual, nil)
+			So(cmd, ShouldHaveSameTypeAs, DeleteCmd{})
+			cmd1 := cmd.(DeleteCmd)
+			So(cmd1.Mailbox, ShouldEqual, "INBOX")
+
+			cmd, err = parseLine("a001 DELETE some_inbox")
+			So(err, ShouldEqual, nil)
+			So(cmd, ShouldHaveSameTypeAs, DeleteCmd{})
+			cmd1 = cmd.(DeleteCmd)
+			So(cmd1.Mailbox, ShouldEqual, "some_inbox")
+
+			// Not enough arguments
+			cmd, err = parseLine("a001 DELETE")
+			So(err, ShouldNotEqual, nil)
+
+			// Too many arguments
+			cmd, err = parseLine("a001 DELETE to many args")
+			So(err, ShouldNotEqual, nil)
+
+			// Non astring argument
+			cmd, err = parseLine("a001 EXAMINE test\"test")
+			So(err, ShouldNotEqual, nil)
+
+		})
+
 	})
 
 }

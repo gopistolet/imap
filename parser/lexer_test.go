@@ -181,4 +181,34 @@ func TestLexer(t *testing.T) {
 
 	})
 
+	Convey("Testing isMailbox", t, func() {
+		for _, s := range []string{
+			"a002",
+			"test",
+			"1",
+			"test",
+			`"hello world"`,
+			`"\\"`,
+			`"\""`,
+			`"hello\"world"`,
+			`"hello'world"`,
+			"{10}",
+			"{1}",
+			"INBOX",
+			"inbox",
+			"InBoX",
+		} {
+			So(isMailbox(s), ShouldEqual, true)
+		}
+
+		for _, s := range []string{
+			"test*test",
+			"\\test",
+			"👎",
+			"π",
+		} {
+			So(isMailbox(s), ShouldNotEqual, true)
+		}
+	})
+
 }

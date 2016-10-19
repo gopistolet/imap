@@ -23,3 +23,19 @@ type StarttlsCmd struct {
 type AuthenticateCmd struct {
 	Mechanism string
 }
+
+type SelectCmd struct {
+	Mailbox string
+}
+
+type ExamineCmd struct {
+	Mailbox string
+}
+
+type CreateCmd struct {
+	Mailbox string
+}
+
+type DeleteCmd struct {
+	Mailbox string
+}

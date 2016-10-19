@@ -204,3 +204,23 @@ func isAtom(s string) bool {
 	}
 	return true
 }
+
+/*
+mailbox = "INBOX" / astring
+		  ; INBOX is case-insensitive.  All case variants of
+		  ; INBOX (e.g., "iNbOx") MUST be interpreted as INBOX
+		  ; not as an astring.  An astring which consists of
+		  ; the case-insensitive sequence "I" "N" "B" "O" "X"
+		  ; is considered to be INBOX and not an astring.
+		  ;  Refer to section 5.1 for further
+		  ; semantic details of mailbox names.
+*/
+func isMailbox(s string) bool {
+	if strings.ToUpper(s) == "INBOX" {
+		return true
+	} else if isAString(s) {
+		return true
+	} else {
+		return false
+	}
+}
