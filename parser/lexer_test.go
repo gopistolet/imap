@@ -197,6 +197,11 @@ func TestLexer(t *testing.T) {
 			"INBOX",
 			"inbox",
 			"InBoX",
+			"~smith/Mail/",
+			"archive/",
+			"#news.",
+			"~smith/Mail/",
+			"archive/",
 		} {
 			So(isMailbox(s), ShouldEqual, true)
 		}
@@ -209,6 +214,55 @@ func TestLexer(t *testing.T) {
 		} {
 			So(isMailbox(s), ShouldNotEqual, true)
 		}
+	})
+
+	Convey("Testing isListMailbox", t, func() {
+		for _, s := range []string{
+			"a002",
+			"test",
+			"1",
+			"test",
+			`"hello world"`,
+			`"\\"`,
+			`"\""`,
+			`"hello\"world"`,
+			`"hello'world"`,
+			"{10}",
+			"{1}",
+			"test*test",
+			"test%test",
+			"foo.*",
+			"%",
+			"comp.mail.*",
+			"/usr/doc/foo",
+			"~fred/Mail/*",
+		} {
+			So(isListMailbox(s), ShouldEqual, true)
+		}
+
+		for _, s := range []string{
+			"{test}",
+			"{10",
+			"{",
+			"(",
+			")",
+			"(test",
+			"test)",
+			"(test)",
+			" ",
+			"",
+			`"`,
+			`"test`,
+			`test"`,
+			"\\test",
+			"👎",
+			"π",
+			string([]byte{0x0, 0x1, 0x2, 0x3, 0x4}),
+			string([]byte{0x7f}),
+		} {
+			So(isListMailbox(s), ShouldEqual, false)
+		}
+
 	})
 
 }

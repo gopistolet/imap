@@ -83,6 +83,7 @@ func isAString(s string) bool {
 		}
 	case '{':
 		{
+			// TODO: CRLF *CHAR8
 			if s[len(s)-1] != '}' {
 				return false
 			}
@@ -223,4 +224,55 @@ func isMailbox(s string) bool {
 	} else {
 		return false
 	}
+}
+
+/*
+list-mailbox    = 1*list-char / string
+list-char       = ATOM-CHAR / list-wildcards / resp-specials
+list-wildcards  = "%" / "*"
+
+string          = quoted / literal
+*/
+func isListMailbox(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+
+	switch s[0] {
+	case '"':
+		{
+			// string -> quoted
+			if len(s) < 2 {
+				return false
+			}
+			if s[len(s)-1] != '"' {
+				return false
+			}
+			return isQuoted(s[1 : len(s)-1])
+		}
+	case '{':
+		{
+			// string -> literal
+			if s[len(s)-1] != '}' {
+				return false
+			}
+			for _, c := range s[1 : len(s)-1] {
+				if !isDigit(c) {
+					return false
+				}
+			}
+		}
+	default:
+		{
+			// 1*list-char
+			// TODO: CRLF *CHAR8
+			for _, c := range s {
+				if !isAtomChar(c) && c != '%' && c != '*' && c != ']' {
+					return false
+				}
+			}
+		}
+	}
+
+	return true
 }

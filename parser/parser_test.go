@@ -140,6 +140,14 @@ func TestParser(t *testing.T) {
 					instance: DeleteCmd{},
 					name:     "DELETE",
 				},
+				{
+					instance: SubscribeCmd{},
+					name:     "SUBSCRIBE",
+				},
+				{
+					instance: UnsubscribeCmd{},
+					name:     "UNSUBSCRIBE",
+				},
 			} {
 
 				Convey(test.name, func() {
@@ -170,6 +178,72 @@ func TestParser(t *testing.T) {
 
 				})
 			}
+
+			Convey("LIST", func() {
+
+				cmd, err := parseLine("a001 LIST some_reference some_mailbox")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, ListCmd{})
+				cmd1 := cmd.(ListCmd)
+				So(cmd1.Reference, ShouldEqual, "some_reference")
+				So(cmd1.Mailbox, ShouldEqual, "some_mailbox")
+
+				cmd, err = parseLine("a001 LIST inbox some_mailbox")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, ListCmd{})
+				cmd1 = cmd.(ListCmd)
+				So(cmd1.Reference, ShouldEqual, "INBOX")
+
+				// Not enough arguments
+				cmd, err = parseLine("a001 LIST")
+				So(err, ShouldNotEqual, nil)
+
+				// Too many arguments
+				cmd, err = parseLine("a001 LIST to many args")
+				So(err, ShouldNotEqual, nil)
+
+				// Non astring argument
+				cmd, err = parseLine("a001 LIST test\"test test")
+				So(err, ShouldNotEqual, nil)
+
+				// Non list-mailbox argument
+				cmd, err = parseLine("a001 LIST test test\"test")
+				So(err, ShouldNotEqual, nil)
+
+			})
+
+			Convey("LSUB", func() {
+
+				cmd, err := parseLine("a001 LSUB some_reference some_mailbox")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, LsubCmd{})
+				cmd1 := cmd.(LsubCmd)
+				So(cmd1.Reference, ShouldEqual, "some_reference")
+				So(cmd1.Mailbox, ShouldEqual, "some_mailbox")
+
+				cmd, err = parseLine("a001 LSUB inbox some_mailbox")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, LsubCmd{})
+				cmd1 = cmd.(LsubCmd)
+				So(cmd1.Reference, ShouldEqual, "INBOX")
+
+				// Not enough arguments
+				cmd, err = parseLine("a001 LSUB")
+				So(err, ShouldNotEqual, nil)
+
+				// Too many arguments
+				cmd, err = parseLine("a001 LSUB to many args")
+				So(err, ShouldNotEqual, nil)
+
+				// Non astring argument
+				cmd, err = parseLine("a001 LSUB test\"test test")
+				So(err, ShouldNotEqual, nil)
+
+				// Non list-mailbox argument
+				cmd, err = parseLine("a001 LSUB test test\"test")
+				So(err, ShouldNotEqual, nil)
+
+			})
 
 		})
 

@@ -59,3 +59,29 @@ type DeleteCmd struct {
 func (cmd DeleteCmd) GetMailbox() string {
 	return cmd.Mailbox
 }
+
+type SubscribeCmd struct {
+	Mailbox string
+}
+
+func (cmd SubscribeCmd) GetMailbox() string {
+	return cmd.Mailbox
+}
+
+type UnsubscribeCmd struct {
+	Mailbox string
+}
+
+func (cmd UnsubscribeCmd) GetMailbox() string {
+	return cmd.Mailbox
+}
+
+type ListCmd struct {
+	Reference string
+	Mailbox   string
+}
+
+type LsubCmd struct {
+	Reference string
+	Mailbox   string
+}

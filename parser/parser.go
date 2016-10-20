@@ -166,6 +166,83 @@ func parseLine(line string) (command Cmd, err error) {
 				Mailbox: parseMailbox(lexCommand.Arguments[0]),
 			}
 		}
+	case "SUBSCRIBE":
+		{
+			/*
+				subscribe = "SUBSCRIBE" SP mailbox
+			*/
+			if len(lexCommand.Arguments) != 1 {
+				err = errors.New("Parser: expected 1 argument for SUBSCRIBE command")
+				return
+			}
+			if !isMailbox(lexCommand.Arguments[0]) {
+				err = errors.New("Parser: expected first argument (mailbox) for SUBSCRIBE to be 'INBOX' or astring")
+			}
+
+			command = SubscribeCmd{
+				Mailbox: parseMailbox(lexCommand.Arguments[0]),
+			}
+		}
+	case "UNSUBSCRIBE":
+		{
+			/*
+				unsubscribe = "UNSUBSCRIBE" SP mailbox
+			*/
+			if len(lexCommand.Arguments) != 1 {
+				err = errors.New("Parser: expected 1 argument for UNSUBSCRIBE command")
+				return
+			}
+			if !isMailbox(lexCommand.Arguments[0]) {
+				err = errors.New("Parser: expected first argument (mailbox) for UNSUBSCRIBE to be 'INBOX' or astring")
+			}
+
+			command = UnsubscribeCmd{
+				Mailbox: parseMailbox(lexCommand.Arguments[0]),
+			}
+		}
+	case "LIST":
+		{
+			/*
+			   list = "LIST" SP mailbox SP list-mailbox
+			*/
+			if len(lexCommand.Arguments) != 2 {
+				err = errors.New("Parser: expected 2 arguments for LIST command")
+				return
+			}
+			if !isMailbox(lexCommand.Arguments[0]) {
+				err = errors.New("Parser: expected first argument (reference) for LIST to be 'INBOX' or astring")
+			}
+			if !isListMailbox(lexCommand.Arguments[1]) {
+				err = errors.New("Parser: expected second argument (mailbox) for LIST to be list-mailbox")
+			}
+
+			command = ListCmd{
+				Reference: parseMailbox(lexCommand.Arguments[0]),
+				Mailbox:   lexCommand.Arguments[1],
+			}
+		}
+	case "LSUB":
+		{
+			/*
+			   lsub = "LSUB" SP mailbox SP list-mailbox
+			*/
+			if len(lexCommand.Arguments) != 2 {
+				err = errors.New("Parser: expected 2 arguments for LSUB command")
+				return
+			}
+			if !isMailbox(lexCommand.Arguments[0]) {
+				err = errors.New("Parser: expected first argument (reference) for LSUB to be 'INBOX' or astring")
+			}
+			if !isListMailbox(lexCommand.Arguments[1]) {
+				err = errors.New("Parser: expected second argument (mailbox) for LSUB to be list-mailbox")
+			}
+
+			command = LsubCmd{
+				Reference: parseMailbox(lexCommand.Arguments[0]),
+				Mailbox:   lexCommand.Arguments[1],
+			}
+		}
+
 	default:
 		{
 			err = errors.New("Unknown command")
