@@ -19,206 +19,157 @@ func TestParser(t *testing.T) {
 
 		})
 
-		Convey("STARTTLS", func() {
+		Convey("Any State", func() {
 
-			cmd, err := parseLine("a001 STARTTLS")
-			So(err, ShouldEqual, nil)
-			So(cmd, ShouldHaveSameTypeAs, StarttlsCmd{})
+			Convey("LOGOUT", func() {
 
-			cmd, err = parseLine("a001 STARTTLS no arguments expected")
-			So(err, ShouldNotEqual, nil)
+				cmd, err := parseLine("a001 LOGOUT")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, LogoutCmd{})
 
-		})
+				cmd, err = parseLine("a001 LOGOUT no arguments expected")
+				So(err, ShouldNotEqual, nil)
+			})
 
-		Convey("LOGIN", func() {
+			Convey("CAPABILITY", func() {
 
-			cmd, err := parseLine("a001 login mrc secret")
-			So(err, ShouldEqual, nil)
-			So(cmd, ShouldHaveSameTypeAs, LoginCmd{})
-			loginCmd := cmd.(LoginCmd)
-			So(loginCmd.Username, ShouldEqual, "mrc")
-			So(loginCmd.Password, ShouldEqual, "secret")
+				cmd, err := parseLine("a001 CAPABILITY")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, CapabilityCmd{})
 
-			// Not enough arguments
-			cmd, err = parseLine("a001 login")
-			So(err, ShouldNotEqual, nil)
+				cmd, err = parseLine("a001 CAPABILITY no arguments expected")
+				So(err, ShouldNotEqual, nil)
 
-			// Not enough arguments
-			cmd, err = parseLine("a001 login test")
-			So(err, ShouldNotEqual, nil)
+			})
 
-			// Wrong type of arguments
-			cmd, err = parseLine("a001 login {test test")
-			So(err, ShouldNotEqual, nil)
+			Convey("NOOP", func() {
 
-			cmd, err = parseLine("a001 login test \"test")
-			So(err, ShouldNotEqual, nil)
+				cmd, err := parseLine("a001 NOOP")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, NoopCmd{})
 
-		})
+				cmd, err = parseLine("a001 NOOP no arguments expected")
+				So(err, ShouldNotEqual, nil)
 
-		Convey("LOGOUT", func() {
-
-			cmd, err := parseLine("a001 LOGOUT")
-			So(err, ShouldEqual, nil)
-			So(cmd, ShouldHaveSameTypeAs, LogoutCmd{})
-
-			cmd, err = parseLine("a001 LOGOUT no arguments expected")
-			So(err, ShouldNotEqual, nil)
-		})
-
-		Convey("CAPABILITY", func() {
-
-			cmd, err := parseLine("a001 CAPABILITY")
-			So(err, ShouldEqual, nil)
-			So(cmd, ShouldHaveSameTypeAs, CapabilityCmd{})
-
-			cmd, err = parseLine("a001 CAPABILITY no arguments expected")
-			So(err, ShouldNotEqual, nil)
+			})
 
 		})
 
-		Convey("NOOP", func() {
+		Convey("Not Authenticated State", func() {
 
-			cmd, err := parseLine("a001 NOOP")
-			So(err, ShouldEqual, nil)
-			So(cmd, ShouldHaveSameTypeAs, NoopCmd{})
+			Convey("STARTTLS", func() {
 
-			cmd, err = parseLine("a001 NOOP no arguments expected")
-			So(err, ShouldNotEqual, nil)
+				cmd, err := parseLine("a001 STARTTLS")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, StarttlsCmd{})
 
-		})
+				cmd, err = parseLine("a001 STARTTLS no arguments expected")
+				So(err, ShouldNotEqual, nil)
 
-		Convey("AUTHENTICATE", func() {
+			})
 
-			cmd, err := parseLine("a001 AUTHENTICATE GSSAPI")
-			So(err, ShouldEqual, nil)
-			So(cmd, ShouldHaveSameTypeAs, AuthenticateCmd{})
-			authCmd := cmd.(AuthenticateCmd)
-			So(authCmd.Mechanism, ShouldEqual, "GSSAPI")
+			Convey("LOGIN", func() {
 
-			// Not enough arguments
-			cmd, err = parseLine("a001 AUTHENTICATE")
-			So(err, ShouldNotEqual, nil)
+				cmd, err := parseLine("a001 login mrc secret")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, LoginCmd{})
+				loginCmd := cmd.(LoginCmd)
+				So(loginCmd.Username, ShouldEqual, "mrc")
+				So(loginCmd.Password, ShouldEqual, "secret")
 
-			// Too many arguments
-			cmd, err = parseLine("a001 AUTHENTICATE to many args")
-			So(err, ShouldNotEqual, nil)
+				// Not enough arguments
+				cmd, err = parseLine("a001 login")
+				So(err, ShouldNotEqual, nil)
 
-			// Non atom argument
-			cmd, err = parseLine("a001 AUTHENTICATE ßlaßlaßla")
-			So(err, ShouldNotEqual, nil)
+				// Not enough arguments
+				cmd, err = parseLine("a001 login test")
+				So(err, ShouldNotEqual, nil)
 
-		})
+				// Wrong type of arguments
+				cmd, err = parseLine("a001 login {test test")
+				So(err, ShouldNotEqual, nil)
 
-		Convey("SELECT", func() {
+				cmd, err = parseLine("a001 login test \"test")
+				So(err, ShouldNotEqual, nil)
 
-			cmd, err := parseLine("a001 SELECT inbox")
-			So(err, ShouldEqual, nil)
-			So(cmd, ShouldHaveSameTypeAs, SelectCmd{})
-			cmd1 := cmd.(SelectCmd)
-			So(cmd1.Mailbox, ShouldEqual, "INBOX")
+			})
 
-			cmd, err = parseLine("a001 SELECT some_inbox")
-			So(err, ShouldEqual, nil)
-			So(cmd, ShouldHaveSameTypeAs, SelectCmd{})
-			cmd1 = cmd.(SelectCmd)
-			So(cmd1.Mailbox, ShouldEqual, "some_inbox")
+			Convey("AUTHENTICATE", func() {
 
-			// Not enough arguments
-			cmd, err = parseLine("a001 SELECT")
-			So(err, ShouldNotEqual, nil)
+				cmd, err := parseLine("a001 AUTHENTICATE GSSAPI")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, AuthenticateCmd{})
+				authCmd := cmd.(AuthenticateCmd)
+				So(authCmd.Mechanism, ShouldEqual, "GSSAPI")
 
-			// Too many arguments
-			cmd, err = parseLine("a001 SELECT to many args")
-			So(err, ShouldNotEqual, nil)
+				// Not enough arguments
+				cmd, err = parseLine("a001 AUTHENTICATE")
+				So(err, ShouldNotEqual, nil)
 
-			// Non astring argument
-			cmd, err = parseLine("a001 SELECT test\"test")
-			So(err, ShouldNotEqual, nil)
+				// Too many arguments
+				cmd, err = parseLine("a001 AUTHENTICATE to many args")
+				So(err, ShouldNotEqual, nil)
 
-		})
+				// Non atom argument
+				cmd, err = parseLine("a001 AUTHENTICATE ßlaßlaßla")
+				So(err, ShouldNotEqual, nil)
 
-		Convey("EXAMINE", func() {
-
-			cmd, err := parseLine("a001 EXAMINE inbox")
-			So(err, ShouldEqual, nil)
-			So(cmd, ShouldHaveSameTypeAs, ExamineCmd{})
-			cmd1 := cmd.(ExamineCmd)
-			So(cmd1.Mailbox, ShouldEqual, "INBOX")
-
-			cmd, err = parseLine("a001 EXAMINE some_inbox")
-			So(err, ShouldEqual, nil)
-			So(cmd, ShouldHaveSameTypeAs, ExamineCmd{})
-			cmd1 = cmd.(ExamineCmd)
-			So(cmd1.Mailbox, ShouldEqual, "some_inbox")
-
-			// Not enough arguments
-			cmd, err = parseLine("a001 EXAMINE")
-			So(err, ShouldNotEqual, nil)
-
-			// Too many arguments
-			cmd, err = parseLine("a001 EXAMINE to many args")
-			So(err, ShouldNotEqual, nil)
-
-			// Non astring argument
-			cmd, err = parseLine("a001 EXAMINE test\"test")
-			So(err, ShouldNotEqual, nil)
+			})
 
 		})
 
-		Convey("CREATE", func() {
+		Convey("Authenticated State", func() {
 
-			cmd, err := parseLine("a001 CREATE inbox")
-			So(err, ShouldEqual, nil)
-			So(cmd, ShouldHaveSameTypeAs, CreateCmd{})
-			cmd1 := cmd.(CreateCmd)
-			So(cmd1.Mailbox, ShouldEqual, "INBOX")
+			for _, test := range []struct {
+				instance interface{}
+				name     string
+			}{
+				{
+					instance: SelectCmd{},
+					name:     "SELECT",
+				},
+				{
+					instance: ExamineCmd{},
+					name:     "EXAMINE",
+				},
+				{
+					instance: CreateCmd{},
+					name:     "CREATE",
+				},
+				{
+					instance: DeleteCmd{},
+					name:     "DELETE",
+				},
+			} {
 
-			cmd, err = parseLine("a001 CREATE some_inbox")
-			So(err, ShouldEqual, nil)
-			So(cmd, ShouldHaveSameTypeAs, CreateCmd{})
-			cmd1 = cmd.(CreateCmd)
-			So(cmd1.Mailbox, ShouldEqual, "some_inbox")
+				Convey(test.name, func() {
 
-			// Not enough arguments
-			cmd, err = parseLine("a001 CREATE")
-			So(err, ShouldNotEqual, nil)
+					cmd, err := parseLine("a001 " + test.name + " inbox")
+					So(err, ShouldEqual, nil)
+					So(cmd, ShouldHaveSameTypeAs, test.instance)
+					cmd1 := cmd.(AuthenticatedStateCmd)
+					So(cmd1.GetMailbox(), ShouldEqual, "INBOX")
 
-			// Too many arguments
-			cmd, err = parseLine("a001 CREATE to many args")
-			So(err, ShouldNotEqual, nil)
+					cmd, err = parseLine("a001 " + test.name + " some_inbox")
+					So(err, ShouldEqual, nil)
+					So(cmd, ShouldHaveSameTypeAs, test.instance)
+					cmd1 = cmd.(AuthenticatedStateCmd)
+					So(cmd1.GetMailbox(), ShouldEqual, "some_inbox")
 
-			// Non astring argument
-			cmd, err = parseLine("a001 EXAMINE test\"test")
-			So(err, ShouldNotEqual, nil)
+					// Not enough arguments
+					cmd, err = parseLine("a001 " + test.name + "")
+					So(err, ShouldNotEqual, nil)
 
-		})
+					// Too many arguments
+					cmd, err = parseLine("a001 " + test.name + " to many args")
+					So(err, ShouldNotEqual, nil)
 
-		Convey("DELETE", func() {
+					// Non astring argument
+					cmd, err = parseLine("a001 " + test.name + " test\"test")
+					So(err, ShouldNotEqual, nil)
 
-			cmd, err := parseLine("a001 DELETE inbox")
-			So(err, ShouldEqual, nil)
-			So(cmd, ShouldHaveSameTypeAs, DeleteCmd{})
-			cmd1 := cmd.(DeleteCmd)
-			So(cmd1.Mailbox, ShouldEqual, "INBOX")
-
-			cmd, err = parseLine("a001 DELETE some_inbox")
-			So(err, ShouldEqual, nil)
-			So(cmd, ShouldHaveSameTypeAs, DeleteCmd{})
-			cmd1 = cmd.(DeleteCmd)
-			So(cmd1.Mailbox, ShouldEqual, "some_inbox")
-
-			// Not enough arguments
-			cmd, err = parseLine("a001 DELETE")
-			So(err, ShouldNotEqual, nil)
-
-			// Too many arguments
-			cmd, err = parseLine("a001 DELETE to many args")
-			So(err, ShouldNotEqual, nil)
-
-			// Non astring argument
-			cmd, err = parseLine("a001 EXAMINE test\"test")
-			So(err, ShouldNotEqual, nil)
+				})
+			}
 
 		})
 
