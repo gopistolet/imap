@@ -179,6 +179,39 @@ func TestParser(t *testing.T) {
 				})
 			}
 
+			Convey("RENAME", func() {
+
+				cmd, err := parseLine("a001 RENAME source_mailbox dest_mailbox")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, RenameCmd{})
+				cmd1 := cmd.(RenameCmd)
+				So(cmd1.SourceMailbox, ShouldEqual, "source_mailbox")
+				So(cmd1.DestinationMailbox, ShouldEqual, "dest_mailbox")
+
+				cmd, err = parseLine("a001 RENAME inbox some_mailbox")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, RenameCmd{})
+				cmd1 = cmd.(RenameCmd)
+				So(cmd1.SourceMailbox, ShouldEqual, "INBOX")
+
+				// Not enough arguments
+				cmd, err = parseLine("a001 RENAME")
+				So(err, ShouldNotEqual, nil)
+
+				// Too many arguments
+				cmd, err = parseLine("a001 RENAME to many args")
+				So(err, ShouldNotEqual, nil)
+
+				// Non astring argument
+				cmd, err = parseLine("a001 RENAME test\"test test")
+				So(err, ShouldNotEqual, nil)
+
+				// Non list-mailbox argument
+				cmd, err = parseLine("a001 RENAME test test\"test")
+				So(err, ShouldNotEqual, nil)
+
+			})
+
 			Convey("LIST", func() {
 
 				cmd, err := parseLine("a001 LIST some_reference some_mailbox")

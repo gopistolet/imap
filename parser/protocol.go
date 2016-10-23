@@ -85,3 +85,8 @@ type LsubCmd struct {
 	Reference string
 	Mailbox   string
 }
+
+type RenameCmd struct {
+	SourceMailbox      string
+	DestinationMailbox string
+}

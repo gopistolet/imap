@@ -166,6 +166,28 @@ func parseLine(line string) (command Cmd, err error) {
 				Mailbox: parseMailbox(lexCommand.Arguments[0]),
 			}
 		}
+	case "RENAME":
+		{
+			/*
+			   rename = "RENAME" SP mailbox SP mailbox
+			             ; Use of INBOX as a destination gives a NO error
+			*/
+			if len(lexCommand.Arguments) != 2 {
+				err = errors.New("Parser: expected 2 argument for RENAME command")
+				return
+			}
+			if !isMailbox(lexCommand.Arguments[0]) {
+				err = errors.New("Parser: expected first argument (mailbox) for RENAME to be 'INBOX' or astring")
+			}
+			if !isMailbox(lexCommand.Arguments[1]) {
+				err = errors.New("Parser: expected second argument (mailbox) for RENAME to be 'INBOX' or astring")
+			}
+
+			command = RenameCmd{
+				SourceMailbox:      parseMailbox(lexCommand.Arguments[0]),
+				DestinationMailbox: parseMailbox(lexCommand.Arguments[1]),
+			}
+		}
 	case "SUBSCRIBE":
 		{
 			/*
