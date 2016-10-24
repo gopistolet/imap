@@ -60,6 +60,11 @@ func (cmd DeleteCmd) GetMailbox() string {
 	return cmd.Mailbox
 }
 
+type RenameCmd struct {
+	SourceMailbox      string
+	DestinationMailbox string
+}
+
 type SubscribeCmd struct {
 	Mailbox string
 }
@@ -86,7 +91,7 @@ type LsubCmd struct {
 	Mailbox   string
 }
 
-type RenameCmd struct {
-	SourceMailbox      string
-	DestinationMailbox string
+type StatusCmd struct {
+	Mailbox          string
+	StatusAttributes []string
 }

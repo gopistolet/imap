@@ -278,6 +278,61 @@ func TestParser(t *testing.T) {
 
 			})
 
+			Convey("STATUS", func() {
+
+				cmd, err := parseLine("A042 STATUS blurdybloop (UIDNEXT MESSAGES)")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, StatusCmd{})
+				cmd1 := cmd.(StatusCmd)
+				So(cmd1.Mailbox, ShouldEqual, "blurdybloop")
+				So(len(cmd1.StatusAttributes), ShouldEqual, 2)
+				So(cmd1.StatusAttributes[0], ShouldEqual, "UIDNEXT")
+				So(cmd1.StatusAttributes[1], ShouldEqual, "MESSAGES")
+
+				cmd, err = parseLine("A042 STATUS blurdybloop (UNSEEN)")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, StatusCmd{})
+				cmd1 = cmd.(StatusCmd)
+				So(cmd1.Mailbox, ShouldEqual, "blurdybloop")
+				So(len(cmd1.StatusAttributes), ShouldEqual, 1)
+				So(cmd1.StatusAttributes[0], ShouldEqual, "UNSEEN")
+
+				// Not enough arguments
+				cmd, err = parseLine("a001 STATUS")
+				So(err, ShouldNotEqual, nil)
+
+				cmd, err = parseLine("a001 STATUS box")
+				So(err, ShouldNotEqual, nil)
+
+				// Too many arguments
+				cmd, err = parseLine("a001 STATUS to many args")
+				So(err, ShouldNotEqual, nil)
+
+				// Non astring argument
+				cmd, err = parseLine("a001 STATUS test\"test test")
+				So(err, ShouldNotEqual, nil)
+
+				// Non attr list argument
+				cmd, err = parseLine("a001 STATUS test test")
+				So(err, ShouldNotEqual, nil)
+
+				// Empty attr list argument
+				cmd, err = parseLine("a001 STATUS test ()")
+				So(err, ShouldNotEqual, nil)
+
+				// Wrong attr argument
+				cmd, err = parseLine("a001 STATUS test (somename)")
+				So(err, ShouldNotEqual, nil)
+
+				// wrong syntax for attr argument
+				cmd, err = parseLine("a001 STATUS test (somename")
+				So(err, ShouldNotEqual, nil)
+
+				cmd, err = parseLine("a001 STATUS test somename)")
+				So(err, ShouldNotEqual, nil)
+
+			})
+
 		})
 
 	})

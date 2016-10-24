@@ -264,6 +264,53 @@ func parseLine(line string) (command Cmd, err error) {
 				Mailbox:   lexCommand.Arguments[1],
 			}
 		}
+	case "STATUS":
+		{
+			/*
+			   status     = "STATUS" SP mailbox SP "(" status-att *(SP status-att) ")"
+			   status-att = "MESSAGES" / "RECENT" / "UIDNEXT" / "UIDVALIDITY" / "UNSEEN"
+			*/
+			if len(lexCommand.Arguments) < 1 {
+				err = errors.New("Parser: expected mailbox argument for STATUS command")
+				return
+			}
+			if !isMailbox(lexCommand.Arguments[0]) {
+				err = errors.New("Parser: expected first argument (mailbox) for STATUS to be 'INBOX' or astring")
+			}
+			if len(lexCommand.Arguments) < 2 {
+				err = errors.New("Parser: expected status-att list for STATUS command")
+				return
+			}
+			firstAttr := &lexCommand.Arguments[1]
+			lastAttr := &lexCommand.Arguments[len(lexCommand.Arguments)-1]
+			if (*firstAttr)[0] != '(' || (*lastAttr)[len(*lastAttr)-1] != ')' {
+				err = errors.New("Parser: expected status-att list for STATUS command. Didn't find delimiter")
+				return
+			}
+			*firstAttr = strings.TrimPrefix(*firstAttr, "(")
+			*lastAttr = strings.TrimSuffix(*lastAttr, ")")
+
+			for _, attr := range lexCommand.Arguments[1:] {
+				switch attr {
+				case "MESSAGES", "RECENT", "UIDNEXT", "UIDVALIDITY", "UNSEEN":
+					{
+						continue
+					}
+				default:
+					{
+						err = errors.New("Parser: unknown status-att for STATUS command: " + attr)
+						return
+					}
+
+				}
+			}
+
+			command = StatusCmd{
+				Mailbox:          parseMailbox(lexCommand.Arguments[0]),
+				StatusAttributes: lexCommand.Arguments[1:],
+			}
+
+		}
 
 	default:
 		{
