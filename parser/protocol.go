@@ -1,5 +1,7 @@
 package parser
 
+import "time"
+
 type Cmd interface {
 }
 
@@ -94,4 +96,11 @@ type LsubCmd struct {
 type StatusCmd struct {
 	Mailbox          string
 	StatusAttributes []string
+}
+
+type AppendCmd struct {
+	Mailbox  string
+	Flags    []string
+	DateTime time.Time
+	Literal  string
 }

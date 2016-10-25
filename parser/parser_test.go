@@ -333,6 +333,60 @@ func TestParser(t *testing.T) {
 
 			})
 
+			Convey("APPEND", func() {
+
+				cmd, err := parseLine("A003 APPEND saved-messages (\\Seen) {310}")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, AppendCmd{})
+				cmd1 := cmd.(AppendCmd)
+				So(cmd1.Mailbox, ShouldEqual, "saved-messages")
+				So(cmd1.Flags, ShouldResemble, []string{"\\Seen"})
+
+				cmd, err = parseLine(`A00027 APPEND A-SPAM-filtered/2002 (\Seen) "31-Dec-2002 14:36:36 -0800" {6663}`)
+				So(err, ShouldEqual, nil)
+
+				cmd, err = parseLine(`A00027 APPEND A-SPAM-filtered/2002 "31-Dec-2002 14:36:36 -0800" {6663}`)
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, AppendCmd{})
+				cmd1 = cmd.(AppendCmd)
+				So(cmd1.Mailbox, ShouldEqual, "A-SPAM-filtered/2002")
+				So(cmd1.Flags, ShouldResemble, []string{})
+
+				cmd, err = parseLine(`A00027 APPEND A-SPAM-filtered/2002 " 1-Dec-2002 14:36:36 +0800" {6663}`)
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, AppendCmd{})
+				cmd1 = cmd.(AppendCmd)
+				So(cmd1.Mailbox, ShouldEqual, "A-SPAM-filtered/2002")
+				So(cmd1.Flags, ShouldResemble, []string{})
+
+				// Not enough arguments
+				cmd, err = parseLine("a001 APPEND")
+				So(err, ShouldNotEqual, nil)
+
+				cmd, err = parseLine("a001 APPEND box")
+				So(err, ShouldNotEqual, nil)
+
+				// Too many arguments
+				cmd, err = parseLine("a001 APPEND to many args")
+				So(err, ShouldNotEqual, nil)
+
+				// Non mailbox argument
+				cmd, err = parseLine("a001 APPEND test\"test {10}")
+				So(err, ShouldNotEqual, nil)
+
+				// Non literal argument
+				cmd, err = parseLine("a001 APPEND test {test")
+				So(err, ShouldNotEqual, nil)
+
+				// malformed list
+				cmd, err = parseLine("A003 APPEND saved-messages (\\Seen {310}")
+				So(err, ShouldNotEqual, nil)
+
+				// malformed time
+				cmd, err = parseLine("A003 APPEND saved-messages (\\Seen) \"1-malformed-2002 14:36:36 +0800\" {310}")
+				So(err, ShouldNotEqual, nil)
+			})
+
 		})
 
 	})
