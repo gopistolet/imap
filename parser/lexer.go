@@ -253,14 +253,7 @@ func isListMailbox(s string) bool {
 	case '{':
 		{
 			// string -> literal
-			if s[len(s)-1] != '}' {
-				return false
-			}
-			for _, c := range s[1 : len(s)-1] {
-				if !isDigit(c) {
-					return false
-				}
-			}
+			return isLiteral(s)
 		}
 	default:
 		{
@@ -274,5 +267,35 @@ func isListMailbox(s string) bool {
 		}
 	}
 
+	return true
+}
+
+/*
+literal         = "{" number "}" CRLF *CHAR8
+				  ; Number represents the number of CHAR8s
+number          = 1*DIGIT
+				  ; Unsigned 32-bit integer
+				  ; (0 <= n < 4,294,967,296)
+*/
+func isLiteral(s string) bool {
+
+	/*
+		TODO:
+		should we accept '+'?
+		found this on internet:
+		    A00010 APPEND A-SPAM-filtered/2002 (\Seen) "31-Dec-2002 22:36:36 -0800" {6663+}
+	*/
+
+	if len(s) < 3 {
+		return false
+	}
+	if s[0] != '{' || s[len(s)-1] != '}' {
+		return false
+	}
+	for _, c := range s[1 : len(s)-1] {
+		if !isDigit(c) {
+			return false
+		}
+	}
 	return true
 }

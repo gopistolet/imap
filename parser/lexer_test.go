@@ -243,6 +243,7 @@ func TestLexer(t *testing.T) {
 		for _, s := range []string{
 			"{test}",
 			"{10",
+			"{}",
 			"{",
 			"(",
 			")",
@@ -263,6 +264,24 @@ func TestLexer(t *testing.T) {
 			So(isListMailbox(s), ShouldEqual, false)
 		}
 
+	})
+
+	Convey("Testing isLiteral", t, func() {
+		for _, s := range []string{
+			"{10}",
+			"{1}",
+		} {
+			So(isLiteral(s), ShouldEqual, true)
+		}
+
+		for _, s := range []string{
+			"{test}",
+			"{}",
+			"{1",
+			"1}",
+		} {
+			So(isLiteral(s), ShouldNotEqual, true)
+		}
 	})
 
 }
