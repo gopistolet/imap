@@ -373,6 +373,7 @@ func parseLine(line string) (command Cmd, err error) {
 					}
 					if count == 1 {
 						err = errors.New("Parser: malformed flaglist APPEND")
+						return
 					}
 				}
 				if count != len(lexCommand.Arguments)-1 {
@@ -384,6 +385,9 @@ func parseLine(line string) (command Cmd, err error) {
 					}
 					dateTime = dateTime[1 : len(dateTime)-1]
 					date, err = parseDateTime(strings.TrimPrefix(dateTime, " "))
+					if err != nil {
+						return
+					}
 				}
 			}
 
@@ -419,6 +423,131 @@ func parseLine(line string) (command Cmd, err error) {
 				return
 			}
 			command = ExpungeCmd{}
+		}
+	case "SEARCH":
+		{
+			/*
+				search          = "SEARCH" [SP "CHARSET" SP astring] 1*(SP search-key)
+									; CHARSET argument to MUST be registered with IANA
+
+				search-key      = "ALL" / "ANSWERED" / "BCC" SP astring /
+								  "BEFORE" SP date / "BODY" SP astring /
+								  "CC" SP astring / "DELETED" / "FLAGGED" /
+								  "FROM" SP astring / "KEYWORD" SP flag-keyword /
+								  "NEW" / "OLD" / "ON" SP date / "RECENT" / "SEEN" /
+								  "SINCE" SP date / "SUBJECT" SP astring /
+								  "TEXT" SP astring / "TO" SP astring /
+								  "UNANSWERED" / "UNDELETED" / "UNFLAGGED" /
+								  "UNKEYWORD" SP flag-keyword / "UNSEEN" /
+									; Above this line were in [IMAP2]
+								  "DRAFT" / "HEADER" SP header-fld-name SP astring /
+								  "LARGER" SP number / "NOT" SP search-key /
+								  "OR" SP search-key SP search-key /
+								  "SENTBEFORE" SP date / "SENTON" SP date /
+								  "SENTSINCE" SP date / "SMALLER" SP number /
+								  "UID" SP sequence-set / "UNDRAFT" / sequence-set /
+								  "(" search-key *(SP search-key) ")"
+			*/
+		}
+	case "FETCH":
+		{
+			/*
+				fetch           = "FETCH" SP sequence-set SP ("ALL" / "FULL" / "FAST" /
+								  fetch-att / "(" fetch-att *(SP fetch-att) ")")
+
+				fetch-att       = "ENVELOPE" / "FLAGS" / "INTERNALDATE" /
+								  "RFC822" [".HEADER" / ".SIZE" / ".TEXT"] /
+								  "BODY" ["STRUCTURE"] / "UID" /
+								  "BODY" section ["<" number "." nz-number ">"] /
+								  "BODY.PEEK" section ["<" number "." nz-number ">"]
+				section         = "[" [section-spec] "]"
+				section-spec    = section-msgtext / (section-part ["." section-text])
+				section-msgtext = "HEADER" / "HEADER.FIELDS" [".NOT"] SP header-list /
+				                  "TEXT"
+				                    ; top-level or MESSAGE/RFC822 part
+				header-list     = "(" header-fld-name *(SP header-fld-name) ")"
+				header-fld-name = astring
+				section-part    = nz-number *("." nz-number)
+				                    ; body part nesting
+				section-text    = section-msgtext / "MIME"
+				                    ; text other than actual body part (headers, etc.)
+			*/
+			if len(lexCommand.Arguments) < 2 {
+				err = errors.New("Parser: expected sequence set and args for FETCH command")
+				return
+			}
+			if !isSequenceSet(lexCommand.Arguments[0]) {
+				err = errors.New("Parser: expected first argument for FATCH command to be sequence-set")
+			}
+
+			// TODO
+
+			command = FetchCmd{}
+		}
+	case "STORE":
+		{
+			/*
+				store           = "STORE" SP sequence-set SP store-att-flags
+				store-att-flags = (["+" / "-"] "FLAGS" [".SILENT"]) SP
+				                  (flag-list / (flag *(SP flag)))
+			*/
+			if len(lexCommand.Arguments) < 2 {
+				err = errors.New("Parser: expected sequence set and store-att-flags for STORE command")
+				return
+			}
+			if !isSequenceSet(lexCommand.Arguments[0]) {
+				err = errors.New("Parser: expected first argument for STORE command to be sequence-set")
+				return
+			}
+
+			silent := false
+			if strings.HasSuffix(lexCommand.Arguments[1], ".SILENT") {
+				silent = true
+				lexCommand.Arguments[1] = strings.TrimSuffix(lexCommand.Arguments[1], ".SILENT")
+			}
+
+			if !strings.HasSuffix(lexCommand.Arguments[1], "FLAGS") {
+				err = errors.New("Parser: expected FLAGS for STORE command")
+				return
+			}
+
+			mode := strings.TrimSuffix(lexCommand.Arguments[1], "FLAGS")
+			if mode != "+" && mode != "-" && mode != "" {
+				err = errors.New("Parser: expected '+', '-', or '' as flag mode for FLAG command")
+				return
+			}
+
+			flags := []string{}
+			if (strings.HasPrefix(lexCommand.Arguments[2], "(") && !strings.HasSuffix(lexCommand.Arguments[len(lexCommand.Arguments)-1], ")")) ||
+				(!strings.HasPrefix(lexCommand.Arguments[2], "(") && strings.HasSuffix(lexCommand.Arguments[len(lexCommand.Arguments)-1], ")")) {
+				err = errors.New("Parser: malformed flaglist for STORE")
+				return
+			}
+			for _, flag := range lexCommand.Arguments[2:len(lexCommand.Arguments)] {
+				flags = append(flags, strings.TrimPrefix(strings.TrimSuffix(flag, ")"), "("))
+			}
+
+			command = StoreCmd{
+				Sequence: lexCommand.Arguments[0],
+				Mode:     mode,
+				Silent:   silent,
+				Flags:    flags,
+			}
+
+		}
+	case "COPY":
+		{
+			/*
+				copy            = "COPY" SP sequence-set SP mailbox
+			*/
+		}
+	case "UID":
+		{
+			/*
+				uid             = "UID" SP (copy / fetch / search / store)
+				                    ; Unique identifiers used instead of message
+				                    ; sequence numbers
+			*/
 		}
 
 	default:

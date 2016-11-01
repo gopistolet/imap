@@ -113,3 +113,13 @@ type CloseCmd struct {
 
 type ExpungeCmd struct {
 }
+
+type FetchCmd struct {
+}
+
+type StoreCmd struct {
+	Sequence string
+	Silent   bool
+	Mode     string // "+", "-", or nothing
+	Flags    []string
+}

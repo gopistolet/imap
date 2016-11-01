@@ -312,4 +312,79 @@ func TestLexer(t *testing.T) {
 		}
 	})
 
+	Convey("Testing isNzDigit", t, func() {
+		for _, command := range []rune{
+			'1',
+			'2',
+			'3',
+		} {
+			So(isNzDigit(command), ShouldEqual, true)
+		}
+
+		for _, command := range []rune{
+			'0',
+			'a',
+			'z',
+		} {
+			So(isNzDigit(command), ShouldEqual, false)
+		}
+	})
+
+	Convey("Testing isSeqNumber", t, func() {
+		for _, command := range []string{
+			"2",
+			"22",
+			"*",
+		} {
+			So(isSeqNumber(command), ShouldEqual, true)
+		}
+
+		for _, command := range []string{
+			"0",
+			"01",
+			"*b",
+		} {
+			So(isSeqNumber(command), ShouldEqual, false)
+		}
+	})
+
+	Convey("Testing isSeqRange", t, func() {
+		for _, command := range []string{
+			"2:4",
+			"2:*",
+			"12:*",
+		} {
+			So(isSeqRange(command), ShouldEqual, true)
+		}
+
+		for _, command := range []string{
+			"a:b",
+			"0",
+			"*",
+		} {
+			So(isSeqRange(command), ShouldEqual, false)
+		}
+	})
+
+	Convey("Testing isSequenceSet", t, func() {
+		for _, command := range []string{
+			"2,4:7,9,12:*",
+			"443:557",
+			"4827313:4828442",
+			"2",
+			"2:4",
+		} {
+			So(isSequenceSet(command), ShouldEqual, true)
+		}
+
+		for _, command := range []string{
+			"",
+			"a",
+			"a:b",
+			"*:b",
+		} {
+			So(isSequenceSet(command), ShouldEqual, false)
+		}
+	})
+
 }

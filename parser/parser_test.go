@@ -421,6 +421,60 @@ func TestParser(t *testing.T) {
 				So(err, ShouldNotEqual, nil)
 			})
 
+			Convey("FETCH", func() {
+
+				cmd, err := parseLine("A654 FETCH 2:4 (FLAGS BODY[HEADER.FIELDS (DATE FROM)])")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, FetchCmd{})
+			})
+
+			Convey("Store", func() {
+
+				cmd, err := parseLine("A003 STORE 2:4 +FLAGS (\\Deleted)")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, StoreCmd{})
+				cmd1 := cmd.(StoreCmd)
+				So(cmd1.Sequence, ShouldEqual, "2:4")
+				So(cmd1.Mode, ShouldEqual, "+")
+				So(cmd1.Silent, ShouldEqual, false)
+				So(cmd1.Flags, ShouldResemble, []string{"\\Deleted"})
+
+				cmd, err = parseLine("A003 STORE 2:4 FLAGS.SILENT (\\Deleted \\Seen)")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, StoreCmd{})
+				cmd1 = cmd.(StoreCmd)
+				So(cmd1.Sequence, ShouldEqual, "2:4")
+				So(cmd1.Mode, ShouldEqual, "")
+				So(cmd1.Silent, ShouldEqual, true)
+				So(cmd1.Flags, ShouldResemble, []string{"\\Deleted", "\\Seen"})
+
+				// Not enough args
+				cmd, err = parseLine("A003 STORE 2:4")
+				So(err, ShouldNotEqual, nil)
+
+				cmd, err = parseLine("A003 STORE")
+				So(err, ShouldNotEqual, nil)
+
+				// not sequence set as first arg
+				cmd, err = parseLine("A003 STORE blablabla FLAGS.SILENT (\\Deleted \\Seen)")
+				So(err, ShouldNotEqual, nil)
+
+				// No flags
+				cmd, err = parseLine("A003 STORE 2:4 somekey.SILENT (\\Deleted \\Seen)")
+				So(err, ShouldNotEqual, nil)
+
+				// wrong mode
+				cmd, err = parseLine("A003 STORE 2:4 mFLAGS (\\Deleted)")
+				So(err, ShouldNotEqual, nil)
+
+				// malformed list
+				cmd, err = parseLine("A003 STORE 2:4 FLAGS \\Deleted)")
+				So(err, ShouldNotEqual, nil)
+
+				cmd, err = parseLine("A003 STORE 2:4 FLAGS (\\Deleted")
+				So(err, ShouldNotEqual, nil)
+			})
+
 		})
 
 	})
