@@ -395,6 +395,31 @@ func parseLine(line string) (command Cmd, err error) {
 			}
 
 		}
+	// Client Commands - Selected State
+	case "CHECK":
+		{
+			if len(lexCommand.Arguments) != 0 {
+				err = errors.New("Parser: expected no arguments for CHECK command")
+				return
+			}
+			command = CheckCmd{}
+		}
+	case "CLOSE":
+		{
+			if len(lexCommand.Arguments) != 0 {
+				err = errors.New("Parser: expected no arguments for CLOSE command")
+				return
+			}
+			command = CloseCmd{}
+		}
+	case "EXPUNGE":
+		{
+			if len(lexCommand.Arguments) != 0 {
+				err = errors.New("Parser: expected no arguments for EXPUNGE command")
+				return
+			}
+			command = ExpungeCmd{}
+		}
 
 	default:
 		{

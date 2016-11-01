@@ -104,3 +104,12 @@ type AppendCmd struct {
 	DateTime time.Time
 	Literal  string
 }
+
+type CheckCmd struct {
+}
+
+type CloseCmd struct {
+}
+
+type ExpungeCmd struct {
+}

@@ -389,6 +389,40 @@ func TestParser(t *testing.T) {
 
 		})
 
+		Convey("Selected State", func() {
+
+			Convey("CHECK", func() {
+
+				cmd, err := parseLine("FXXZ CHECK")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, CheckCmd{})
+
+				cmd, err = parseLine("a001 CHECK no arguments expected")
+				So(err, ShouldNotEqual, nil)
+			})
+
+			Convey("CLOSE", func() {
+
+				cmd, err := parseLine("A341 CLOSE")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, CloseCmd{})
+
+				cmd, err = parseLine("a001 CLOSE no arguments expected")
+				So(err, ShouldNotEqual, nil)
+			})
+
+			Convey("EXPUNGE", func() {
+
+				cmd, err := parseLine("A202 EXPUNGE")
+				So(err, ShouldEqual, nil)
+				So(cmd, ShouldHaveSameTypeAs, ExpungeCmd{})
+
+				cmd, err = parseLine("a001 EXPUNGE no arguments expected")
+				So(err, ShouldNotEqual, nil)
+			})
+
+		})
+
 	})
 
 }
