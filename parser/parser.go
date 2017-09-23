@@ -7,12 +7,14 @@ import (
 )
 
 // parseLine parses a single line and returns the matching IMAP command
-func parseLine(line string) (command Cmd, err error) {
+func parseLine(line string) (command Cmd, tag string, err error) {
 
 	lexCommand, err := lexLine(line)
 	if err != nil {
 		return
 	}
+	
+	tag = lexCommand.Tag
 
 	switch lexCommand.Name {
 
